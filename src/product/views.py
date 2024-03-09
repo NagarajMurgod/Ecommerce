@@ -10,7 +10,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import ProductSerializer,CreateProductSerializer
 from .models import Product
-
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 class UploadProductImageView(APIView):
     permission_classes = [IsAuthenticated,IsSuperUser]
@@ -41,7 +43,17 @@ class UploadProductImageView(APIView):
 
 class ListCreateProducView(ListCreateAPIView):
     permission_classes = [IsAuthenticated,IsSuperUser]
-    
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    search_fields = ["name", "tags__title"]
+    ordering_fields = ["created_at", "updated_at"]
+    ordering = ["-created_at"]
+    page_size = 2
+    pagination_class = PageNumberPagination
+
+    def list(self, request, *args,**kwargs):
+        self.pagination_class.page_size = self.page_size
+        return super().list(request,*args,**kwargs)
+
     def get_serializer_class(self):
         if self.request.method == "POST":
             return CreateProductSerializer
@@ -49,7 +61,7 @@ class ListCreateProducView(ListCreateAPIView):
         return ProductSerializer
     
     def get_queryset(self):
-        return Product.objects.filter().order_by("-created_at").prefetch_related("tags")
+        return Product.objects.filter().prefetch_related("tags")
     
     def create(self,request,*args,**kwargs):
         serializer = self.get_serializer(data=request.data, context={
