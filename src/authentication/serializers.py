@@ -71,3 +71,17 @@ class UserLoginSerializer(serializers.ModelSerializer):
 class CustomeTokenRefreshSerializer(TokenRefreshSerializer):
     pass
         
+    
+class LogoutRequestSerializer(serializers.Serializer):
+    all = serializers.BooleanField(required=False)
+    refresh = serializers.CharField(required=False)
+
+    def validate(self, attrs):
+        all = attrs.get('all')
+        refresh = attrs.get('refresh')
+        if not all and not refresh:
+
+            raise serializers.ValidationError({
+                "refresh" : "if logout from all device then provide all prameter with value true else refresh token"
+            })
+        return super().validate(attrs)

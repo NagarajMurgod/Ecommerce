@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'common',
-    'rest_framework_simplejwt.token_blacklist'
+    'rest_framework_simplejwt.token_blacklist',
+    'admin_dashboard'
 
 ]
 
@@ -210,3 +211,7 @@ REST_FRAMEWORK = {
     )
    
 }
+
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
-from .serializers import CreateUserSerializer,UserLoginSerializer,CustomeTokenRefreshSerializer
+from .serializers import CreateUserSerializer,UserLoginSerializer,CustomeTokenRefreshSerializer, LogoutRequestSerializer
 from rest_framework import status
 from common.helpers import validation_error_handler
 from authentication.models import User
@@ -13,6 +13,11 @@ from django.utils.encoding import force_bytes, force_str
 from .tokens import account_activation_token
 from django.contrib.auth.hashers import check_password  # authenticate method can also be used to check the password, but it make new db query to fethc user object , to availd it manually chcking the password
 from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
+
 
 class SignupView(APIView):  
     serializer_class = CreateUserSerializer
@@ -171,8 +176,58 @@ class LoginView(APIView):
                 "payload" : {}
             },status=status.HTTP_404_NOT_FOUND)
 
+
+
 class CustomTokenRefreshView(TokenRefreshView):
     serializer_class = CustomeTokenRefreshSerializer
+
+
+class UserLogoutView(APIView):
+    serializer_class = LogoutRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args,**kwargs):
+        request_data = request.data
+        serializer = self.serializer_class(data=request_data)
+        if serializer.is_valid() is False:
+
+            return Response({
+                'status': 'error',
+                'message' : validation_error_handler(serializer.errors),
+                'payload':{
+                    "errors":serializer.errors
+                }
+            },status.HTTP_400_BAD_REQUEST)
+
+        validated_data = serializer.validated_data
+        try:
+            if validated_data.get("all"):
+                for token in OutstandingToken.objects.filter(user=request.user):
+                    _,_ = BlacklistedToken.objects.get_or_create(token=token)
+
+                    return Response({
+                        "status" : "success",
+                        "message": "succesfully logged out from all the devices"
+                    },status=status.HTTP_200_OK)
+            
+            refresh_token = validated_data.get('refresh')
+
+            token = RefreshToken(token=refresh_token)
+            token.blacklist()
+            return Response({
+                "status" : "success",
+                "message": "succesfully logged out from  the devices"
+            },status=status.HTTP_200_OK)
+        
+            
+            
+        except TokenError:
+            return Response({
+                "detail" : "token is blaklisted",
+                "code" : "token_not valid"
+
+            },status=status.HTTP_401_UNAUTHORIZED)
+
 
 
 
