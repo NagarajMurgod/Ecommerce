@@ -14,9 +14,10 @@ class Order(TimestampModel):
     payment_id = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     status =models.CharField(choices=OrderStatusChoice.CHOICE_LIST, max_length=16)
-
+    
 
 class OrderItem(TimestampModel):
     product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name='orders')
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     price = models.DecimalField(max_digits=10,decimal_places=2)
+    quantity = models.PositiveIntegerField()

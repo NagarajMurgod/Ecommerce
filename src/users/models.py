@@ -12,4 +12,12 @@ class Cart(TimestampModel):
 class CartItem(TimestampModel):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['product_id', 'cart_id'],
+                name = 'unique-cart-product'
+            )
+        ]

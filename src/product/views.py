@@ -13,6 +13,8 @@ from .models import Product
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 
 class UploadProductImageView(APIView):
     permission_classes = [IsAuthenticated,IsSuperUser]
