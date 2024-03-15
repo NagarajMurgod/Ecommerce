@@ -3,7 +3,7 @@ from .models import Cart,CartItem,Product
 
 
 class AddtoCartSerializer(serializers.Serializer):
-    product_uuid = serializers.CharField()
+    product_uuid = serializers.UUIDField()
 
 
 class ProductSerializer(serializers.ModelSerializer):

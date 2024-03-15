@@ -8,13 +8,21 @@ from users.models import Cart,CartItem
 from django.db.models import F
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
+from common.helpers import validation_error_handler
 
 class AddtoCartView(APIView):
     serializer_class = AddtoCartSerializer
     permission_classes = [IsAuthenticated]
     def post(self, request, *args,**kwargs):
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        # serializer.is_valid(raise_exception=True)4
+        if serializer.is_valid() is False:
+            return Response({
+                "status" : "error",
+                "message":validation_error_handler(serializer.errors),
+                "paylod" : serializer.errors,
+            },status = status.HTTP_400_BAD_REQUEST)
+
         validated_data = serializer._validated_data
 
         product_uuid = validated_data['product_uuid']
