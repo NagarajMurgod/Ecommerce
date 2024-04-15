@@ -1,3 +1,3 @@
 # Ecommerce Website
 
-![Ecommerce website ER MODEL!](./images/blog_model.png)
+![Ecommerce website ER MODEL!](./Ecommerce.png)
